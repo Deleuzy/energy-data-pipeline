@@ -159,7 +159,9 @@ They pass on Python 3.11 (pandas 2.3) and 3.12 (pandas 3.0). GitHub Actions runs
 them on both versions (`.github/workflows/ci.yml`).
 
 Docker: `docker build -t edp . && docker run -p 8000:8000 edp` runs one live fetch
-and then serves the API. The Dockerfile has not been built yet in this repo.
+and then serves the API. Built and checked on 2026-10-26: the container ran a live
+fetch (4 flags, same as above), `/quality`, `POST /scope2` and `/dashboard` all
+responded. The container needs internet access at startup.
 
 ## Limitations
 
