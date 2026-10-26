@@ -1,0 +1,5 @@
+{
+  "url": "https://api.energidataservice.dk/dataset/CO2Emis?start=2026-10-13T06%3A00&end=2026-10-13T09%3A00&timezone=UTC&columns=Minutes5UTC%2CPriceArea%2CCO2Emission&sort=Minutes5UTC+ASC%2CPriceArea+ASC&offset=0&limit=5000",
+  "fetched_at": "2026-10-26T13:38:34+00:00",
+  "sha256": "7a448c1793998c7dbb9a8c362134e5e3338240acdbd6ba9ed746edfcb97fe62f"
+}

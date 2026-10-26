@@ -1,0 +1,108 @@
+{
+  "run_id": "20261026T134032Z-aafad1",
+  "window_utc": [
+    "2026-10-01T00:00",
+    "2026-10-15T00:00"
+  ],
+  "sources": [
+    {
+      "dataset": "CO2Emis",
+      "url": "https://api.energidataservice.dk/dataset/CO2Emis?start=2026-10-01T00%3A00&end=2026-10-15T00%3A00&timezone=UTC&columns=Minutes5UTC%2CPriceArea%2CCO2Emission&sort=Minutes5UTC+ASC%2CPriceArea+ASC&offset=0&limit=5000",
+      "fetched_at": "2026-10-26T13:37:47+00:00",
+      "n_records": 5000,
+      "sha256": "acf89f835292cc66074f5bb78820c8e08de747fa765ba776e0bb6bc38b69ed8f",
+      "from_cache": 1
+    },
+    {
+      "dataset": "CO2Emis",
+      "url": "https://api.energidataservice.dk/dataset/CO2Emis?start=2026-10-01T00%3A00&end=2026-10-15T00%3A00&timezone=UTC&columns=Minutes5UTC%2CPriceArea%2CCO2Emission&sort=Minutes5UTC+ASC%2CPriceArea+ASC&offset=5000&limit=5000",
+      "fetched_at": "2026-10-26T13:37:47+00:00",
+      "n_records": 3062,
+      "sha256": "6aae26fcbf9c4572ee6a83d046ece018b5c0a418d3c84fa61f0f37549c486af6",
+      "from_cache": 1
+    },
+    {
+      "dataset": "ProductionConsumptionSettlement",
+      "url": "https://api.energidataservice.dk/dataset/ProductionConsumptionSettlement?start=2026-10-01T00%3A00&end=2026-10-15T00%3A00&timezone=UTC&columns=HourUTC%2CPriceArea%2CGrossConsumptionMWh%2COffshoreWindLt100MW_MWh%2COffshoreWindGe100MW_MWh%2COnshoreWindLt50kW_MWh%2COnshoreWindGe50kW_MWh%2CSolarPowerLt10kW_MWh%2CSolarPowerGe10Lt40kW_MWh%2CSolarPowerGe40kW_MWh%2CSolarPowerSelfConMWh&sort=HourUTC+ASC%2CPriceArea+ASC&offset=0&limit=5000",
+      "fetched_at": "2026-10-26T13:37:48+00:00",
+      "n_records": 672,
+      "sha256": "faa53b98ff18c70e08cfc91c355350bffe25c92fdc6ccfc0985a07f9eb4c0f95",
+      "from_cache": 1
+    }
+  ],
+  "row_counts": {
+    "raw_co2emis": 8062,
+    "raw_production_consumption": 672,
+    "co2_5min_validated": {
+      "error": 2,
+      "ok": 8062
+    },
+    "co2_hourly": {
+      "ok": 670,
+      "warning": 2
+    },
+    "consumption_hourly": {
+      "ok": 672
+    }
+  },
+  "flag_counts": [
+    {
+      "dataset": "CO2Emis",
+      "price_area": "DK1",
+      "rule": "missing_slot",
+      "severity": "error",
+      "count": 1
+    },
+    {
+      "dataset": "CO2Emis",
+      "price_area": "DK2",
+      "rule": "missing_slot",
+      "severity": "error",
+      "count": 1
+    },
+    {
+      "dataset": "CO2Emis_hourly",
+      "price_area": "DK1",
+      "rule": "incomplete_hour",
+      "severity": "warning",
+      "count": 1
+    },
+    {
+      "dataset": "CO2Emis_hourly",
+      "price_area": "DK2",
+      "rule": "incomplete_hour",
+      "severity": "warning",
+      "count": 1
+    }
+  ],
+  "total_flags": 4,
+  "intensity_by_area": {
+    "DK1": {
+      "usable_hours": 336,
+      "mean_g_per_kwh": 111.4,
+      "min_g_per_kwh": 36.5,
+      "max_g_per_kwh": 231.5,
+      "consumption_weighted_g_per_kwh": 110.7,
+      "gross_consumption_gwh": 971.8
+    },
+    "DK2": {
+      "usable_hours": 336,
+      "mean_g_per_kwh": 60.7,
+      "min_g_per_kwh": 16.3,
+      "max_g_per_kwh": 163.2,
+      "consumption_weighted_g_per_kwh": 62.4,
+      "gross_consumption_gwh": 585.7
+    }
+  },
+  "scope2_synthetic_site": {
+    "method": "hourly, location-based",
+    "price_area": "DK1",
+    "total_kwh": 12083.21,
+    "covered_kwh": 12083.21,
+    "uncovered_kwh": 0.0,
+    "emissions_kg_co2": 1333.482,
+    "coverage_pct": 100.0,
+    "weighted_intensity_g_per_kwh": 110.36,
+    "periods_not_covered": []
+  }
+}

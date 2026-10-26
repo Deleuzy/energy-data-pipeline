@@ -1,0 +1,5 @@
+{
+  "url": "https://api.energidataservice.dk/dataset/ProductionConsumptionSettlement?start=2026-10-13T06%3A00&end=2026-10-13T09%3A00&timezone=UTC&columns=HourUTC%2CPriceArea%2CGrossConsumptionMWh%2COffshoreWindLt100MW_MWh%2COffshoreWindGe100MW_MWh%2COnshoreWindLt50kW_MWh%2COnshoreWindGe50kW_MWh%2CSolarPowerLt10kW_MWh%2CSolarPowerGe10Lt40kW_MWh%2CSolarPowerGe40kW_MWh%2CSolarPowerSelfConMWh&sort=HourUTC+ASC%2CPriceArea+ASC&offset=0&limit=5000",
+  "fetched_at": "2026-10-26T13:38:35+00:00",
+  "sha256": "6939ce71c0677feafa4cf4915b35d0d8f64ff25fc0c58490c75a540cc87ef583"
+}

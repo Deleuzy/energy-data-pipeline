@@ -1,0 +1,6 @@
+# SYNTHETIC test site: invented values for tests only.
+timestamp_utc,kwh
+2026-10-13T06:00:00Z,10
+2026-10-13T07:00:00Z,20
+2026-10-13T08:00:00Z,30
+2026-10-13T09:00:00Z,5
