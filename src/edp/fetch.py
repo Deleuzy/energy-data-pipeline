@@ -21,10 +21,13 @@ BASE_URL = "https://api.energidataservice.dk/dataset"
 USER_AGENT = "energy-data-pipeline/0.1 (portfolio demo; github.com/Deleuzy)"
 PAGE_SIZE = 5000
 MIN_SECONDS_BETWEEN_REQUESTS = 1.0
+RATE_LIMIT_WAIT_SECONDS = 65
 
 # Dataset name -> columns we keep. Names are exactly as published by Energinet.
 DATASETS = {
     "CO2Emis": ["Minutes5UTC", "PriceArea", "CO2Emission"],
+    # Settled-method CO2 per kWh. Filtered to FuelAllocationMethod 125% in validate.py.
+    "DeclarationGridEmission": ["HourUTC", "PriceArea", "FuelAllocationMethod", "Version", "CO2PerkWh"],
     "ProductionConsumptionSettlement": [
         "HourUTC",
         "PriceArea",
@@ -76,13 +79,18 @@ class EnergiDataServiceClient:
         return self.cache_dir / dataset / f"{safe(start)}_{safe(end)}_off{offset}.json"
 
     def _get(self, url: str, params: dict) -> requests.Response:
-        for attempt in range(4):
+        """GET with rate limiting. The API answers 429 with "try again in ~60 seconds",
+        so a rate-limited request waits a full minute; server errors back off briefly."""
+        for attempt in range(5):
             wait = MIN_SECONDS_BETWEEN_REQUESTS - (time.monotonic() - self._last_request)
             if wait > 0:
                 time.sleep(wait)
             self._last_request = time.monotonic()
             resp = self.session.get(url, params=params, timeout=60)
-            if resp.status_code in (429, 500, 502, 503, 504):
+            if resp.status_code == 429:
+                time.sleep(RATE_LIMIT_WAIT_SECONDS)
+                continue
+            if resp.status_code in (500, 502, 503, 504):
                 time.sleep(2 ** attempt * 2)
                 continue
             resp.raise_for_status()

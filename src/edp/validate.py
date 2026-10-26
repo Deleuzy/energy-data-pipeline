@@ -237,6 +237,30 @@ def validate_co2(raw: pd.DataFrame, start: pd.Timestamp, end: pd.Timestamp):
     return five, ValidationResult(rows, flags)
 
 
+DECLARED_METHOD = "125%"
+
+
+def validate_declared(raw: pd.DataFrame, start: pd.Timestamp, end: pd.Timestamp) -> ValidationResult:
+    """Declared hourly CO2 (Energinet DeclarationGridEmission, 125% method only).
+
+    Other allocation methods (200%, Total) are not used. Rows are kept, not filtered
+    by quality, so the table holds exactly what the API returned for this method.
+    """
+    method = raw[raw["FuelAllocationMethod"] == DECLARED_METHOD]
+    tidy = pd.DataFrame(
+        {
+            "ts_utc": pd.to_datetime(method["HourUTC"]),
+            "price_area": method["PriceArea"].astype(object),
+            "co2_declared_g_per_kwh": pd.to_numeric(method["CO2PerkWh"], errors="coerce"),
+            "version": method["Version"].astype(object),
+        }
+    )
+    return check_series(
+        tidy, "DeclarationGridEmission", ["co2_declared_g_per_kwh"], "h", start, end,
+        ranges=[RangeRule("co2_declared_g_per_kwh", CO2_RANGE.min_value, CO2_RANGE.max_value)],
+    )
+
+
 def validate_consumption(raw: pd.DataFrame, start: pd.Timestamp, end: pd.Timestamp) -> ValidationResult:
     return check_series(
         tidy_consumption(raw),

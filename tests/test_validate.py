@@ -100,3 +100,13 @@ def test_consumption_fixture_is_clean():
     res = validate.validate_consumption(raw, pd.Timestamp(START), pd.Timestamp(END))
     assert res.flags.empty and len(res.rows) == 6
     assert (res.rows["wind_mwh"] > 0).all()
+
+
+def test_declared_keeps_only_125_percent_method():
+    client = fetch.EnergiDataServiceClient(FIXTURES / "raw", offline=True)
+    raw = client.fetch("DeclarationGridEmission", START, END).frame
+    assert len(raw) == 18  # 3 hours x 2 areas x 3 allocation methods
+    res = validate.validate_declared(raw, pd.Timestamp(START), pd.Timestamp(END))
+    assert res.flags.empty and len(res.rows) == 6
+    assert (res.rows["version"] == "Initial").all()
+    assert res.rows["co2_declared_g_per_kwh"].between(0, 1000).all()

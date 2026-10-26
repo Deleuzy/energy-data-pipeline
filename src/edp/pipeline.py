@@ -37,25 +37,33 @@ def fetch_dataset(s: Settings, dataset: str) -> fetch.FetchResult:
     return client.fetch(dataset, s.start, s.end, refresh=s.refresh)
 
 
-def validate_all(co2: fetch.FetchResult, cons: fetch.FetchResult, s: Settings) -> dict:
+def validate_all(co2: fetch.FetchResult, declared: fetch.FetchResult, cons: fetch.FetchResult, s: Settings) -> dict:
     start, end = s.window
     five, hourly = validate.validate_co2(co2.frame, start, end)
+    decl = validate.validate_declared(declared.frame, start, end)
     consumption = validate.validate_consumption(cons.frame, start, end)
-    flags = pd.concat([five.flags, hourly.flags, consumption.flags], ignore_index=True)
+    flags = pd.concat([five.flags, hourly.flags, decl.flags, consumption.flags], ignore_index=True)
     return {
         "co2_5min": five.rows,
         "co2_hourly": hourly.rows,
+        "co2_declared_hourly": decl.rows,
         "consumption_hourly": consumption.rows,
         "flags": flags,
     }
 
 
-def store_all(co2: fetch.FetchResult, cons: fetch.FetchResult, validated: dict, s: Settings) -> str:
+def store_all(co2: fetch.FetchResult, declared: fetch.FetchResult, cons: fetch.FetchResult, validated: dict, s: Settings) -> str:
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:6]
     started = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    fetch_log = pd.DataFrame([asdict(p) for p in co2.pages + cons.pages])
+    fetch_log = pd.DataFrame([asdict(p) for p in co2.pages + declared.pages + cons.pages])
     raw_co2 = co2.frame.rename(
         columns={"Minutes5UTC": "minutes5_utc", "PriceArea": "price_area", "CO2Emission": "co2_emission"}
+    )
+    raw_decl = declared.frame.rename(
+        columns={
+            "HourUTC": "hour_utc", "PriceArea": "price_area", "FuelAllocationMethod": "allocation_method",
+            "Version": "version", "CO2PerkWh": "co2_per_kwh",
+        }
     )
     raw_cons = pd.DataFrame(
         {
@@ -71,9 +79,11 @@ def store_all(co2: fetch.FetchResult, cons: fetch.FetchResult, validated: dict, 
         {
             "fetch_log": fetch_log,
             "raw_co2emis": raw_co2,
+            "raw_declared_emission": raw_decl,
             "raw_production_consumption": raw_cons,
             "co2_5min_validated": validated["co2_5min"],
             "co2_hourly": validated["co2_hourly"],
+            "co2_declared_hourly": validated["co2_declared_hourly"],
             "consumption_hourly": validated["consumption_hourly"],
             "quality_flags": validated["flags"],
         },
@@ -93,8 +103,9 @@ def build_report(s: Settings, run_id: str, result: scope2.Scope2Result) -> dict:
 
 def run(s: Settings) -> dict:
     co2 = fetch_dataset(s, "CO2Emis")
+    declared = fetch_dataset(s, "DeclarationGridEmission")
     cons = fetch_dataset(s, "ProductionConsumptionSettlement")
-    validated = validate_all(co2, cons, s)
-    run_id = store_all(co2, cons, validated, s)
+    validated = validate_all(co2, declared, cons, s)
+    run_id = store_all(co2, declared, cons, validated, s)
     result = scope2_example(s)
     return build_report(s, run_id, result)

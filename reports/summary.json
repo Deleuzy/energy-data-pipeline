@@ -1,5 +1,5 @@
 {
-  "run_id": "20261026T134032Z-aafad1",
+  "run_id": "20261026T134926Z-5056e6",
   "window_utc": [
     "2026-10-01T00:00",
     "2026-10-15T00:00"
@@ -22,6 +22,14 @@
       "from_cache": 1
     },
     {
+      "dataset": "DeclarationGridEmission",
+      "url": "https://api.energidataservice.dk/dataset/DeclarationGridEmission?start=2026-10-01T00%3A00&end=2026-10-15T00%3A00&timezone=UTC&columns=HourUTC%2CPriceArea%2CFuelAllocationMethod%2CVersion%2CCO2PerkWh&sort=HourUTC+ASC%2CPriceArea+ASC&offset=0&limit=5000",
+      "fetched_at": "2026-10-26T13:49:13+00:00",
+      "n_records": 2016,
+      "sha256": "6642acbedf73d566927c648037d76484b843290da0117804427cce57f50640fa",
+      "from_cache": 1
+    },
+    {
       "dataset": "ProductionConsumptionSettlement",
       "url": "https://api.energidataservice.dk/dataset/ProductionConsumptionSettlement?start=2026-10-01T00%3A00&end=2026-10-15T00%3A00&timezone=UTC&columns=HourUTC%2CPriceArea%2CGrossConsumptionMWh%2COffshoreWindLt100MW_MWh%2COffshoreWindGe100MW_MWh%2COnshoreWindLt50kW_MWh%2COnshoreWindGe50kW_MWh%2CSolarPowerLt10kW_MWh%2CSolarPowerGe10Lt40kW_MWh%2CSolarPowerGe40kW_MWh%2CSolarPowerSelfConMWh&sort=HourUTC+ASC%2CPriceArea+ASC&offset=0&limit=5000",
       "fetched_at": "2026-10-26T13:37:48+00:00",
@@ -32,6 +40,7 @@
   ],
   "row_counts": {
     "raw_co2emis": 8062,
+    "raw_declared_emission": 2016,
     "raw_production_consumption": 672,
     "co2_5min_validated": {
       "error": 2,
@@ -40,6 +49,9 @@
     "co2_hourly": {
       "ok": 670,
       "warning": 2
+    },
+    "co2_declared_hourly": {
+      "ok": 672
     },
     "consumption_hourly": {
       "ok": 672
@@ -92,6 +104,22 @@
       "max_g_per_kwh": 163.2,
       "consumption_weighted_g_per_kwh": 62.4,
       "gross_consumption_gwh": 585.7
+    }
+  },
+  "realtime_vs_declared": {
+    "DK1": {
+      "hours_compared": 336,
+      "mean_realtime_g_per_kwh": 111.4,
+      "mean_declared_g_per_kwh": 86.1,
+      "mean_diff_g_per_kwh": 25.3,
+      "mean_abs_diff_g_per_kwh": 28.4
+    },
+    "DK2": {
+      "hours_compared": 336,
+      "mean_realtime_g_per_kwh": 60.7,
+      "mean_declared_g_per_kwh": 65.2,
+      "mean_diff_g_per_kwh": -4.4,
+      "mean_abs_diff_g_per_kwh": 19.1
     }
   },
   "scope2_synthetic_site": {

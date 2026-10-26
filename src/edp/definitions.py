@@ -49,9 +49,16 @@ def production_consumption_raw(context: dg.AssetExecutionContext, settings: Pipe
     return result
 
 
+@dg.asset(group_name="fetch", description="Energinet DeclarationGridEmission, settled-method hourly CO2 (raw).")
+def declared_emission_raw(context: dg.AssetExecutionContext, settings: PipelineSettings):
+    result = pipeline.fetch_dataset(settings.to_settings(), "DeclarationGridEmission")
+    context.add_output_metadata(_fetch_meta(result))
+    return result
+
+
 @dg.asset(group_name="validate", description="Rule-based checks; every row kept with a quality label.")
-def validated(context: dg.AssetExecutionContext, settings: PipelineSettings, co2emis_raw, production_consumption_raw):
-    out = pipeline.validate_all(co2emis_raw, production_consumption_raw, settings.to_settings())
+def validated(context: dg.AssetExecutionContext, settings: PipelineSettings, co2emis_raw, declared_emission_raw, production_consumption_raw):
+    out = pipeline.validate_all(co2emis_raw, declared_emission_raw, production_consumption_raw, settings.to_settings())
     flags = out["flags"]
     context.add_output_metadata(
         {
@@ -65,9 +72,9 @@ def validated(context: dg.AssetExecutionContext, settings: PipelineSettings, co2
 
 
 @dg.asset(group_name="store", description="Raw, validated and flag tables written to SQLite.")
-def sqlite_db(context: dg.AssetExecutionContext, settings: PipelineSettings, co2emis_raw, production_consumption_raw, validated):
+def sqlite_db(context: dg.AssetExecutionContext, settings: PipelineSettings, co2emis_raw, declared_emission_raw, production_consumption_raw, validated):
     s = settings.to_settings()
-    run_id = pipeline.store_all(co2emis_raw, production_consumption_raw, validated, s)
+    run_id = pipeline.store_all(co2emis_raw, declared_emission_raw, production_consumption_raw, validated, s)
     context.add_output_metadata({"run_id": run_id, "db_path": s.db_path})
     return run_id
 
@@ -86,7 +93,7 @@ def report(context: dg.AssetExecutionContext, settings: PipelineSettings, sqlite
     return summary
 
 
-all_assets = [co2emis_raw, production_consumption_raw, validated, sqlite_db, report]
+all_assets = [co2emis_raw, declared_emission_raw, production_consumption_raw, validated, sqlite_db, report]
 
 full_pipeline = dg.define_asset_job("full_pipeline", selection=dg.AssetSelection.assets(*all_assets))
 

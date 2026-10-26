@@ -28,6 +28,14 @@ CREATE TABLE IF NOT EXISTS raw_co2emis (
     co2_emission   REAL,
     run_id         TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS raw_declared_emission (
+    hour_utc            TEXT,
+    price_area          TEXT,
+    allocation_method   TEXT,
+    version             TEXT,
+    co2_per_kwh         REAL,
+    run_id              TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS raw_production_consumption (
     hour_utc                TEXT,
     price_area              TEXT,
@@ -53,6 +61,15 @@ CREATE TABLE IF NOT EXISTS co2_hourly (
     quality         TEXT NOT NULL CHECK (quality IN ('ok','warning','error')),
     flag_rules      TEXT NOT NULL,
     run_id          TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS co2_declared_hourly (
+    ts_utc                  TEXT NOT NULL,
+    price_area              TEXT NOT NULL,
+    co2_declared_g_per_kwh  REAL,
+    version                 TEXT,
+    quality                 TEXT NOT NULL CHECK (quality IN ('ok','warning','error')),
+    flag_rules              TEXT NOT NULL,
+    run_id                  TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS consumption_hourly (
     ts_utc                  TEXT NOT NULL,
@@ -88,8 +105,8 @@ CREATE INDEX IF NOT EXISTS ix_flags ON quality_flags (dataset, rule);
 """
 
 DATA_TABLES = [
-    "fetch_log", "raw_co2emis", "raw_production_consumption", "co2_5min_validated",
-    "co2_hourly", "consumption_hourly", "quality_flags",
+    "fetch_log", "raw_co2emis", "raw_declared_emission", "raw_production_consumption", "co2_5min_validated",
+    "co2_hourly", "co2_declared_hourly", "consumption_hourly", "quality_flags",
 ]
 
 

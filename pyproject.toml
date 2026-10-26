@@ -3,6 +3,7 @@ name = "energy-data-pipeline"
 version = "0.1.0"
 description = "Fetch, validate, store and report Danish grid CO2 intensity from Energinet's Energi Data Service, with a scope 2 calculator."
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
     "requests>=2.31",

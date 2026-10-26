@@ -1,0 +1,5 @@
+{
+  "url": "https://api.energidataservice.dk/dataset/DeclarationGridEmission?start=2026-10-13T06%3A00&end=2026-10-13T09%3A00&timezone=UTC&columns=HourUTC%2CPriceArea%2CFuelAllocationMethod%2CVersion%2CCO2PerkWh&sort=HourUTC+ASC%2CPriceArea+ASC&offset=0&limit=5000",
+  "fetched_at": "2026-10-26T13:47:34+00:00",
+  "sha256": "62d4f2c7645396fb83f3dea581cfa9b4a582ad779f5ecc391ae93a708c42a760"
+}

@@ -28,7 +28,8 @@ def summarize(engine: Engine, run_id: str, s2: Scope2Result) -> dict:
     fetches = read_sql(engine, "SELECT dataset, url, fetched_at, n_records, sha256, from_cache FROM fetch_log")
     flags = read_sql(engine, "SELECT * FROM quality_flags")
     tables = {}
-    for t in ["raw_co2emis", "raw_production_consumption", "co2_5min_validated", "co2_hourly", "consumption_hourly"]:
+    for t in ["raw_co2emis", "raw_declared_emission", "raw_production_consumption", "co2_5min_validated",
+              "co2_hourly", "co2_declared_hourly", "consumption_hourly"]:
         q = read_sql(engine, f"SELECT {'quality, ' if 'raw' not in t else ''}COUNT(*) n FROM {t}"
                      + (" GROUP BY quality" if "raw" not in t else ""))
         tables[t] = {r["quality"]: int(r["n"]) for _, r in q.iterrows()} if "quality" in q else int(q["n"].iloc[0])
@@ -55,6 +56,7 @@ def summarize(engine: Engine, run_id: str, s2: Scope2Result) -> dict:
             "gross_consumption_gwh": round(float(both["gross_consumption_mwh"].sum()) / 1000, 1),
         }
 
+    comparison = _declared_comparison(engine)
     summary_flags = validate.summarize_flags(flags)
     return {
         "run_id": run_id,
@@ -64,8 +66,32 @@ def summarize(engine: Engine, run_id: str, s2: Scope2Result) -> dict:
         "flag_counts": summary_flags.to_dict("records"),
         "total_flags": int(len(flags)),
         "intensity_by_area": areas,
+        "realtime_vs_declared": comparison,
         "scope2_synthetic_site": s2.to_dict(),
     }
+
+
+def _declared_comparison(engine: Engine) -> dict:
+    """Real-time CO2Emis hourly mean minus declared 125% value, per area, over hours both have."""
+    df = read_sql(
+        engine,
+        """SELECT h.price_area, h.co2_g_per_kwh AS realtime, d.co2_declared_g_per_kwh AS declared
+           FROM co2_hourly h JOIN co2_declared_hourly d
+             ON d.ts_utc = h.ts_utc AND d.price_area = h.price_area
+           WHERE h.quality != 'error' AND d.quality != 'error'
+             AND h.co2_g_per_kwh IS NOT NULL AND d.co2_declared_g_per_kwh IS NOT NULL""",
+    )
+    out = {}
+    for area, g in df.groupby("price_area"):
+        diff = g["realtime"] - g["declared"]
+        out[area] = {
+            "hours_compared": int(len(g)),
+            "mean_realtime_g_per_kwh": round(float(g["realtime"].mean()), 1),
+            "mean_declared_g_per_kwh": round(float(g["declared"].mean()), 1),
+            "mean_diff_g_per_kwh": round(float(diff.mean()), 1),
+            "mean_abs_diff_g_per_kwh": round(float(diff.abs().mean()), 1),
+        }
+    return out
 
 
 def _md_table(df: pd.DataFrame) -> str:
@@ -102,6 +128,9 @@ def markdown(summary: dict, flags: pd.DataFrame) -> str:
         f"- Emissions: {s2['emissions_kg_co2']} kg CO2 (weighted intensity {s2['weighted_intensity_g_per_kwh']} g/kWh)",
         f"- Hours not covered: {len(s2['periods_not_covered'])}",
         "",
+        "## Real-time vs declared CO2 (125% method, Initial version)",
+        "",
+        _md_table(pd.DataFrame(summary["realtime_vs_declared"]).T.reset_index(names="price_area")),
         "## Flag detail (first 200)",
         "",
         _md_table(flags.drop(columns=["run_id"]).head(200)),
@@ -153,6 +182,16 @@ def charts(engine: Engine, s2: Scope2Result) -> list[str]:
         fig.update_yaxes(rangemode=None, title=None)
         fig.update_xaxes(title="flags")
         out.append(fig)
+
+    declared = read_sql(engine, "SELECT * FROM co2_declared_hourly WHERE quality != 'error' ORDER BY ts_utc")
+    fig = go.Figure()
+    for area, g in hourly.groupby("price_area"):
+        fig.add_scatter(x=g["ts_utc"], y=g["co2_g_per_kwh"], name=f"{area} real-time", mode="lines",
+                        line=dict(color=SERIES.get(area), width=2), hovertemplate="%{y:.0f} g/kWh")
+    for area, g in declared.groupby("price_area"):
+        fig.add_scatter(x=g["ts_utc"], y=g["co2_declared_g_per_kwh"], name=f"{area} declared", mode="lines",
+                        line=dict(color=SERIES.get(area), width=1.5, dash="dot"), hovertemplate="%{y:.0f} g/kWh")
+    out.append(_layout(fig, "Real-time (solid) vs declared 125% (dotted) CO2 intensity", "g CO2/kWh"))
 
     fig = go.Figure()
     for area, g in cons.groupby("price_area"):
